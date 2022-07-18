@@ -93,9 +93,6 @@ int main(int argc, char *argv[])
   // Iterate through each strand
   printf("\n\nfull seq: %s\n\n", seq);
   char *token = strtok(seq, "+");
-  printf("token 1: %s\n", token);
-  token = strtok(NULL, "+");
-  printf("token 2: %s\n", token);
 
   while (token)
   {
@@ -110,22 +107,25 @@ int main(int argc, char *argv[])
     // get MFE of sequence
     tmpLength = strlen(token);
     convertSeq(token, seqNum, tmpLength);
-    /*
-        mfe = mfeFullWithSym(seqNum, tmpLength, &mfeStructs, complexity, DNARNACOUNT,
-                             DANGLETYPE, TEMP_K - ZERO_C_IN_KELVIN, vs,
-                             1, SODIUM_CONC, MAGNESIUM_CONC,
-                             USE_LONG_HELIX_FOR_SALT_CORRECTION);
-    */
-    mfe = 0;
-    printf("mfe of token: %Lf\n", mfe);
+
+    //int seqNumCopy[MAXSEQLENGTH + 1];
+    //strncpy(seqNumCopy, seqNum, tmpLength); 
+
+
+    mfe = mfeFullWithSym(seqNum, tmpLength, &mfeStructs, complexity, DNARNACOUNT,
+                         DANGLETYPE, TEMP_K - ZERO_C_IN_KELVIN, vs,
+                         1, SODIUM_CONC, MAGNESIUM_CONC,
+                         USE_LONG_HELIX_FOR_SALT_CORRECTION);
+
+
+    // Get next strand
+    token = strtok(NULL, "+");
+
+    //mfe = 0;
+    printf("[test] mfe of token: %Lf\n", mfe);
 
     // write to output file
     fprintf(fp, "%.3Lf\n", mfe);
-
-    // Get next strand
-    printf("full seq again: %s\n", seq);
-    token = strtok(NULL, "+");
-    printf("next token: %s\n", token);
 
     // Reset vars
     clearDnaStructures(&mfeStructs);
