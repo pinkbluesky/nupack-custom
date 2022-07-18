@@ -92,7 +92,7 @@ DBL_TYPE mfeFullWithSym_SubOpt( int inputSeq[], int seqLen,
   // Get dG_salt. It will be used to calculate 
   DBL_TYPE salt_correction = computeSaltCorrection(sodiumconc,magnesiumconc,uselongsalt);
 
-  seqlength = getSequenceLengthInt( inputSeq, &nStrands);
+  seqlength = getSequenceLengthInt( inputSeq, &nStrands); // retrieves # of strands based on input sequence
 
 
 
@@ -108,7 +108,7 @@ DBL_TYPE mfeFullWithSym_SubOpt( int inputSeq[], int seqLen,
   }
 
   seq = (int *) malloc( (seqLen+1)*sizeof( int) );
-  processMultiSequence( inputSeq, seqlength, nStrands, seq, nicks);
+  processMultiSequence( inputSeq, seqlength, nStrands, seq, nicks); // lead into seq and nicks
   foldparens = (int*) malloc( (seqLen+nStrands)*sizeof(int));
 
   if( nStrands >= 2 && complexity >= 5) {
@@ -380,7 +380,7 @@ DBL_TYPE mfeFullWithSym_SubOpt( int inputSeq[], int seqLen,
          LOG_FUNC( (DBL_TYPE) checkSymmetry( (mfeStructures->validStructs)[i].theStruct, seqlength, nicks, symmetry,
                                             nStrands))*kB*TEMP_K + (BIMOLECULAR + salt_correction) *(nStrands-1);
         if(minimum_energy > mfeStructures->validStructs[i].correctedEnergy) {
-          minimum_energy = mfeStructures->validStructs[i].correctedEnergy;
+          minimum_energy = mfeStructures->validStructs[i].correctedEnergy; // determine minimum energy for given sequence
         }
       }
 

@@ -131,6 +131,9 @@ void PrintStructure( char *thefold, const int *thepairs, int **etaN,
 void PrintDnaStructures( const dnaStructures *ds, int **etaN, const int *nicks,
                          int symmetry, char *filename);
 
+//Print mfe values for structures saved in *ds
+void PrintMfeOnly( const dnaStructures *ds, char *filename);
+
 //A dumbed down version of PrintDnaStructures, but only uses . ( ), ignoring multistrands and
 //pseudoknots.  Used only for debugging
 void PrintS( const dnaStructures *ds);

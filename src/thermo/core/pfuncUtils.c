@@ -1051,6 +1051,37 @@ void PrintDnaStructures( const dnaStructures *ds, int **etaN, const int *nicks, 
   free( foldParens);
 }
 
+
+void PrintMfeOnly(const dnaStructures *ds, char *filename)
+{
+  int i, j;
+  int nPercent = 40; // Number of percent signs in a line with all comments
+  FILE *fp;          // File to write output to
+
+  for (i = 0; i < ds->nStructs; i++)
+  {
+    if (!NUPACK_VALIDATE)
+    {
+      fprintf(fp, "%.3Lf\n", (long double)ds->validStructs[i].correctedEnergy); // MFE
+    }
+    else
+    {
+      fprintf(fp, "%.14Le\n", (long double)ds->validStructs[i].correctedEnergy);
+    }
+
+    // Print a comment line for separation
+    fprintf(fp, "%% ");
+    for (j = 0; j < nPercent; j++)
+    {
+      fprintf(fp, "%%");
+    }
+
+    fprintf(fp, " %%\n\n");
+    fclose(fp);
+  }
+}
+
+
 /* ******* */
 void PrintS( const dnaStructures *ds) {
   //print all the structures currently held in ds, ignoring strand breaks
