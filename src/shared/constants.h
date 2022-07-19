@@ -98,6 +98,11 @@ enum BASES {
 //maximum # of strands in a complex
 #define MAXSTRANDS 2000
 #define MAX_FILENAME_LEN 4096
+
+//consts for ADS codex
+#define MAXSEQLENGTH_ADS 1000000
+#define MAXSTRANDS_ADS 10000
+
  
 //MATCH_PF will make the energy model used in energy calculations
 //match the one used in mfe and partition function calculations.

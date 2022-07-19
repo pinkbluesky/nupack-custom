@@ -21,11 +21,49 @@
 
 /* ************************************************ */
 
+/*
+Copy of strtok_r implementation because the standard library strtok_r does not work as expected.
+Tokenizes string; but is thread-safe. Multiple strings can be tokenized at a time given
+different pointer parameter.
+*/
+char *strtok_custom(char *s, const char *delim, char **save_ptr)
+{
+  char *end;
+  if (s == NULL)
+    s = *save_ptr;
+  if (*s == '\0')
+  {
+    *save_ptr = s;
+    return NULL;
+  }
+  /* Scan leading delimiters.  */
+  s += strspn(s, delim);
+  if (*s == '\0')
+  {
+    *save_ptr = s;
+    return NULL;
+  }
+  /* Find the end of the token.  */
+  end = s + strcspn(s, delim);
+  if (*end == '\0')
+  {
+    *save_ptr = end;
+    return s;
+  }
+  /* Terminate the token and make *SAVE_PTR point past it.  */
+  *end = '\0';
+  *save_ptr = end + 1;
+  return s;
+}
+
 int main(int argc, char *argv[])
 {
 
-  char seq[MAXSEQLENGTH];
-  int seqNum[MAXSEQLENGTH + 1];
+  // TODO find a better way to reading in a large file  to the sequence string
+  char seq[MAXSEQLENGTH_ADS];
+  int seqNum[MAXSEQLENGTH_ADS + 1]; // last index contains -1 to indicate end of sequences
+
+  DBL_TYPE strandMfes[MAXSTRANDS_ADS + 1]; // contains mfe values for each strand -- output array
 
   int complexity = 3;
   int tmpLength;
@@ -47,7 +85,7 @@ int main(int argc, char *argv[])
     printf("Usage: mfes [OPTIONS] PREFIX\n");
     printf("Compute and store the minimum free energy and the MFE\n");
     printf("secondary structure(s) of the input sequence(s).\n");
-    printf("Example: mfes -T 25 -material dna example\n");
+    printf("Example: mfes -T 25 -material dna -multi example\n");
     PrintNupackThermoHelp();
     PrintNupackUtilitiesHelp();
     exit(1);
@@ -88,16 +126,16 @@ int main(int argc, char *argv[])
     complexity = 5;
   }
 
-  fp = fopen(outFile, "a");
-
   // Iterate through each strand
-  printf("\n\nfull seq: %s\n\n", seq);
-  char *token = strtok(seq, "+");
+  char *seqptr;
+  char *token = strtok_custom(seq, "+", &seqptr);
+
+  int strandI = 1;   // start at index 1
+  strandMfes[0] = 0; // index 0 will contain the sum
 
   while (token)
   {
     printf("token: %s\n", token);
-    // printf("token is alpha: %d\n\n", isalpha(token));
     if (isalpha(token[0]) == 0) // if strand is not alpha, exit
     {
       printf("Error in input file, sequence is not alpha.");
@@ -108,31 +146,34 @@ int main(int argc, char *argv[])
     tmpLength = strlen(token);
     convertSeq(token, seqNum, tmpLength);
 
-    //int seqNumCopy[MAXSEQLENGTH + 1];
-    //strncpy(seqNumCopy, seqNum, tmpLength); 
-
-
     mfe = mfeFullWithSym(seqNum, tmpLength, &mfeStructs, complexity, DNARNACOUNT,
                          DANGLETYPE, TEMP_K - ZERO_C_IN_KELVIN, vs,
                          1, SODIUM_CONC, MAGNESIUM_CONC,
                          USE_LONG_HELIX_FOR_SALT_CORRECTION);
 
-
     // Get next strand
-    token = strtok(NULL, "+");
+    token = strtok_custom(NULL, "+", &seqptr);
 
-    //mfe = 0;
-    printf("[test] mfe of token: %Lf\n", mfe);
+    printf("mfe of current token: %Lf\n", mfe);
 
-    // write to output file
-    fprintf(fp, "%.3Lf\n", mfe);
+    strandMfes[0] += mfe;
+    strandMfes[strandI++] = mfe;
 
     // Reset vars
     clearDnaStructures(&mfeStructs);
+  }
+
+  // Write sum of all mfes and each oligo's mfe to file
+  fp = fopen(outFile, "a");
+
+  for (int i = 0; i < strandI; i++)
+  {
+    fprintf(fp, "%.3Lf\n", strandMfes[i]);
   }
 
   fclose(fp);
 
   return 0;
 }
+
 /* ****** */
