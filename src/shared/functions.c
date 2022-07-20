@@ -902,6 +902,43 @@ void SetExecutionPath(int nargs, char **args) {
   free(path_copy);
 }
 
+
+/*
+Copy of strtok_r implementation because the standard library strtok_r does not work as expected.
+Tokenizes string; but is thread-safe. Multiple strings can be tokenized at a time given
+different pointer parameter.
+*/
+char *strtok_custom(char *s, const char *delim, char **save_ptr)
+{
+  char *end;
+  if (s == NULL)
+    s = *save_ptr;
+  if (*s == '\0')
+  {
+    *save_ptr = s;
+    return NULL;
+  }
+  /* Scan leading delimiters.  */
+  s += strspn(s, delim);
+  if (*s == '\0')
+  {
+    *save_ptr = s;
+    return NULL;
+  }
+  /* Find the end of the token.  */
+  end = s + strcspn(s, delim);
+  if (*end == '\0')
+  {
+    *save_ptr = end;
+    return s;
+  }
+  /* Terminate the token and make *SAVE_PTR point past it.  */
+  *end = '\0';
+  *save_ptr = end + 1;
+  return s;
+}
+
+
 /* ******************************************************************************** */
 /*                         BEGIN NUMBER PROCESSING FUNCTIONS                        */
 /* ******************************************************************************** */

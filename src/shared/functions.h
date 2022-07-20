@@ -46,6 +46,7 @@ int binomial_coefficient(int n, int k); //compute binomial coefficient. Returns 
 unsigned long GetRandSeed(unsigned long s);
 int fileExists(char* file);
 void SetExecutionPath(int nargs, char **args);
+char *strtok_custom(char *s, const char *delim, char **save_ptr); // copy of strtok_r function
 
 
 #ifdef __cplusplus
