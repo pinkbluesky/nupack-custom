@@ -100,7 +100,7 @@ enum BASES {
 #define MAX_FILENAME_LEN 4096
 
 //consts for ADS codex
-#define MAXSEQLENGTH_ADS 5 // 1000000
+#define MAXSEQLENGTH_ADS 1000000
 #define MAXSTRANDS_ADS 10000
 
  
