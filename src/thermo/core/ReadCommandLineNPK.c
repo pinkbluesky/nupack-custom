@@ -49,6 +49,9 @@ int nUniqueSequences;           // Number of unique sequences entered
 int nupack_random_seed; // Seed to use for sampling
 #endif                  // NUPACK_SAMPLE
 
+int adsNextSeqI;
+char** seqs;
+
 /* ****************************************************************** */
 int ReadCommandLineNPK(int nargs, char **args, char *inputFile)
 {
@@ -61,6 +64,8 @@ int ReadCommandLineNPK(int nargs, char **args, char *inputFile)
   char line[MAXLINE];
   char param[MAXLINE];
   float temp;
+
+  adsNextSeqI = 0; // initialize
 
   static struct option long_options[] =
       {
@@ -645,10 +650,14 @@ int ReadInputFile(char *inputFile, char *theseq, int *v_pi, float *gap, char *st
   return 1;
 }
 
-int ReadInputFileADSCustom(char *inputFile, char *theseq, int *v_pi, float *gap, char *structure,
+/*
+ * Fill in the sequence string with one sequence from the input file.
+ * Returns 1 if successful retrieval of sequence, 0 if not. 
+ */
+int ReadInputFileADSCustom(char *inputFile, char *theseq, int THESEQ_CAPACITY, int *v_pi, float *gap, char *structure,
                            int *thepairs)
 {
-
+  
   printf("In ReadInputFileADScustom line 652");
 
   FILE *F_inp;
@@ -662,73 +671,100 @@ int ReadInputFileADSCustom(char *inputFile, char *theseq, int *v_pi, float *gap,
   int nStrands;
   char *lastline = NULL;
 
-  // Open input file
-  F_inp = fopen(inputFile, "r");
-  if (!F_inp)
+  // if first time reading file
+  if (adsNextSeqI == 0 || inputFile != NULL)
   {
-    printf("Failed to open input file %s\nRequesting input manually.\n", inputFile);
-    return 0;
-  }
+    // Open input file
+    F_inp = fopen(inputFile, "r");
+    if (!F_inp)
+    {
+      printf("Failed to open input file %s\nRequesting input manually.\n", inputFile);
+      return 0;
+    }
 
-  // ignore comments
-  lastline = fgets(line, MAXLINE, F_inp);
-  while (lastline && (line[0] == '%' || line[0] == '>'))
-  {
-    lastline = fgets(line, MAXLINE, F_inp);
-  }
-  if (!lastline)
-  {
-    printf("Error in %s: %s\nRequesting input manually.\n", inputFile, token);
-    fclose(F_inp);
-    return 0;
-  }
-
-  token = strtok(line, "%>");
-
-  // Grab the number of sequences from the input file
-  if (sscanf(token, "%d", &nStrands) != 1)
-  {
-    printf("Error in %s: %s\nNo integer detected for multi\nRequesting input manually.\n", inputFile, token);
-    fclose(F_inp);
-    return 0;
-  }
-
-  // allocate function variables
-  seqs = (char **)malloc(nStrands * sizeof(char *));
-
-  // read in sequences
-  for (i = 0; i < nStrands; i++)
-  {
+    // ignore comments
     lastline = fgets(line, MAXLINE, F_inp);
     while (lastline && (line[0] == '%' || line[0] == '>'))
     {
       lastline = fgets(line, MAXLINE, F_inp);
     }
-    token = strtok(line, "%>");
-
-    if (!lastline || sscanf(token, "%s", line2) != 1)
+    if (!lastline)
     {
-      printf("Error in %s: %s\nNo string found when reading sequence\nRequesting input manually.\n", inputFile, token);
+      printf("Error in %s: %s\nRequesting input manually.\n", inputFile, token);
       fclose(F_inp);
-      for (j = 0; j < i; j++)
-        free(seqs[j]);
-      free(seqs);
       return 0;
     }
 
-    seqs[i] = (char *)malloc((strlen(line2) + 1) * sizeof(char));
+    token = strtok(line, "%>");
 
-    strcpy(seqs[i], line2);
+    // Grab the number of sequences from the input file
+    if (sscanf(token, "%d", &nStrands) != 1)
+    {
+      printf("Error in %s: %s\nNo integer detected for multi\nRequesting input manually.\n", inputFile, token);
+      fclose(F_inp);
+      return 0;
+    }
 
-    seqlengthArray[i] = strlen(seqs[i]);
+    // allocate function variables
+    seqs = (char **)malloc(nStrands * sizeof(char *)); // dynamic
+
+    // read in sequences
+    for (i = 0; i < nStrands; i++)
+    {
+      lastline = fgets(line, MAXLINE, F_inp);
+      while (lastline && (line[0] == '%' || line[0] == '>'))
+      {
+        lastline = fgets(line, MAXLINE, F_inp);
+      }
+      token = strtok(line, "%>");
+
+      if (!lastline || sscanf(token, "%s", line2) != 1)
+      {
+        printf("Error in %s: %s\nNo string found when reading sequence\nRequesting input manually.\n", inputFile, token);
+        fclose(F_inp);
+        for (j = 0; j < i; j++)
+          free(seqs[j]);
+        free(seqs);
+        return 0;
+      }
+
+      seqs[i] = (char *)malloc((strlen(line2) + 1) * sizeof(char));
+
+      strcpy(seqs[i], line2);
+
+      seqlengthArray[i] = strlen(seqs[i]);
+    }
   }
+  
+  // convert sequence array to string of sequences
 
-  strcpy(theseq, seqs[0]);
-  for (i = 1; i < nStrands; i++)
+  // copy in the next DNA sequence if there's room in the string
+  // for (int i = 0; i < (THESEQ_CAPACITY / (1.0 + strlen(seqlengthArray[0]))))
+  while (adsNextSeqI < nStrands && strlen(seqs[adsNextSeqI]) + 1 < THESEQ_CAPACITY)
   {
-    strcat(theseq, "+");
-    strcat(theseq, seqs[i]);
+    if (adsNextSeqI != 0)
+    {
+      strcat(theseq, "+");
+    }
+
+    strcat(theseq, seqs[adsNextSeqI]);
+    adsNextSeqI++;
   }
+
+  if (adsNextSeqI < nStrands) {
+    strcat(theseq, "+");
+  }
+
+  printf("theseq capacity %d", THESEQ_CAPACITY);
+  /*
+    strcpy(theseq, seqs[0]); // copy the first sequence in
+    for (i = 1; i < nStrands; i++)
+    {
+      strcat(theseq, "+");
+      strcat(theseq, seqs[i]);
+    }
+
+    */
 
   *v_pi = 1;
 

@@ -68,13 +68,14 @@ int main(int argc, char *argv[])
 
   // Read the input file
   if (!inputFileSpecified ||
-      !ReadInputFileADSCustom(inputFile, seq, &vs, NULL, NULL, NULL))
+      !ReadInputFileADSCustom(inputFile, seq, MAXSEQLENGTH_ADS, &vs, NULL, NULL, NULL))
   {
     if (inputFileSpecified == 0)
       getUserInput(seq, &vs, NULL, NULL);
     else
       abort();
   }
+  printf("completed first read for adscustom");
   strncpy(outFile, inputFile, strlen(inputFile) - 3);
   outFile[strlen(inputFile) - 3] = '\0';
   strcat(outFile, ".mfes");
@@ -93,41 +94,51 @@ int main(int argc, char *argv[])
   }
 
   // Iterate through each strand
-  char *seqptr;
-  char *token = strtok_custom(seq, "+", &seqptr);
 
   int strandI = 1;   // start at index 1
   strandMfes[0] = 0; // index 0 will contain the sum
 
-  while (token)
+  char *seqptr;
+  char *token;
+
+  do
   {
-    printf("token: %s\n", token);
-    if (isalpha(token[0]) == 0) // if strand is not alpha, exit
+    token = strtok_custom(seq, "+", &seqptr);
+    while (token)
     {
-      printf("Error in input file, sequence is not alpha.");
-      return 1;
+      printf("token: %s\n", token);
+      if (isalpha(token[0]) == 0) // if strand is not alpha, exit
+      {
+        printf("Error in input file, sequence is not alpha.");
+        return 1;
+      }
+
+      // get MFE of sequence
+      tmpLength = strlen(token);
+      convertSeq(token, seqNum, tmpLength);
+
+      mfe = mfeFullWithSym(seqNum, tmpLength, &mfeStructs, complexity, DNARNACOUNT,
+                           DANGLETYPE, TEMP_K - ZERO_C_IN_KELVIN, vs,
+                           1, SODIUM_CONC, MAGNESIUM_CONC,
+                           USE_LONG_HELIX_FOR_SALT_CORRECTION);
+
+      // Get next strand
+      token = strtok_custom(NULL, "+", &seqptr);
+
+      printf("mfe of current token: %Lf\n", mfe);
+
+      strandMfes[0] += mfe;
+      strandMfes[strandI++] = mfe;
+
+      // Reset vars
+      clearDnaStructures(&mfeStructs);
     }
 
-    // get MFE of sequence
-    tmpLength = strlen(token);
-    convertSeq(token, seqNum, tmpLength);
+    // Read in next chunk of sequences
+    seq[0] = '\0'; // okay method since using strcat
+    ReadInputFileADSCustom(NULL, seq, &vs, NULL, NULL, NULL);
 
-    mfe = mfeFullWithSym(seqNum, tmpLength, &mfeStructs, complexity, DNARNACOUNT,
-                         DANGLETYPE, TEMP_K - ZERO_C_IN_KELVIN, vs,
-                         1, SODIUM_CONC, MAGNESIUM_CONC,
-                         USE_LONG_HELIX_FOR_SALT_CORRECTION);
-
-    // Get next strand
-    token = strtok_custom(NULL, "+", &seqptr);
-
-    printf("mfe of current token: %Lf\n", mfe);
-
-    strandMfes[0] += mfe;
-    strandMfes[strandI++] = mfe;
-
-    // Reset vars
-    clearDnaStructures(&mfeStructs);
-  }
+  } while (seqptr == "+");
 
   // Write sum of all mfes and each oligo's mfe to file
   fp = fopen(outFile, "a");
