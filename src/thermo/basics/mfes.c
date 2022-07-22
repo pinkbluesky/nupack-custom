@@ -26,10 +26,17 @@ int main(int argc, char *argv[])
 {
 
   // TODO find a better way to reading in a large file  to the sequence string
-  char seq[MAXSEQLENGTH_ADS];
-  int seqNum[MAXSEQLENGTH_ADS + 1]; // last index contains -1 to indicate end of sequences
+  // char seq[MAXSEQLENGTH_ADS];
+  // int seqNum[MAXSEQLENGTH_ADS + 1]; // last index contains -1 to indicate end of sequences
 
-  DBL_TYPE strandMfes[MAXSTRANDS_ADS + 1]; // contains mfe values for each strand -- output array
+  // DBL_TYPE strandMfes[MAXSTRANDS_ADS + 1]; // contains mfe values for each strand -- output array
+
+  printf("in mfes init vars");
+  char **seqs;
+  int seqNum[MAXLINE];
+  int nStrands;
+  int strandLen;
+  DBL_TYPE mfeSum = 0;
 
   int complexity = 3;
   int tmpLength;
@@ -41,6 +48,8 @@ int main(int argc, char *argv[])
   FILE *fp;
 
   dnaStructures mfeStructs = {NULL, 0, 0, 0, NAD_INFINITY};
+
+  printf("in mfes");
 
   // Get the command line arguments
   strcpy(inputFile, "");
@@ -59,29 +68,39 @@ int main(int argc, char *argv[])
 
   if (!inputFileSpecified)
   {
-    printf("Enter output file prefix: ");
-    scanf("%s", inputFile);
-    strcat(inputFile, ".in"); // Here, .in is just a placeholder
+    printf("No input file specified, aborting.");
+    abort();
   }
 
-  // printf("line 63 mfes.c\n");
+  /*
+    if (!inputFileSpecified)
+    {
+      printf("Enter output file prefix: ");
+      scanf("%s", inputFile);
+      strcat(inputFile, ".in"); // Here, .in is just a placeholder
+    }
 
-  // Read the input file
-  if (!inputFileSpecified ||
-      !ReadInputFileADSCustom(inputFile, seq, &vs, NULL, NULL, NULL))
-  {
-    if (inputFileSpecified == 0)
-      getUserInput(seq, &vs, NULL, NULL);
-    else
-      abort();
-  }
+    // printf("line 63 mfes.c\n");
+
+    // Read the input file
+    if (!inputFileSpecified ||
+        !ReadInputFileADSCustom(inputFile, seq, &vs, NULL, NULL, NULL))
+    {
+      if (inputFileSpecified == 0)
+        getUserInput(seq, &vs, NULL, NULL);
+      else
+        abort();
+    }
+  */
+
+  // Create output file path
   strncpy(outFile, inputFile, strlen(inputFile) - 3);
   outFile[strlen(inputFile) - 3] = '\0';
   strcat(outFile, ".mfes");
 
   // Populate output file with basic information
   header(argc, argv, "mfes", outFile);
-  printInputs(argc, argv, seq, vs, NULL, NULL, outFile);
+  printInputs(argc, argv, NULL, vs, NULL, NULL, outFile);
 
   if (!DO_PSEUDOKNOTS)
   {
@@ -92,50 +111,53 @@ int main(int argc, char *argv[])
     complexity = 5;
   }
 
-  // Iterate through each strand
-  char *seqptr;
-  char *token = strtok_custom(seq, "+", &seqptr);
-
-  int strandI = 1;   // start at index 1
-  strandMfes[0] = 0; // index 0 will contain the sum
-
-  while (token)
+  // Read file
+  if (ReadInputFileSizes(inputFile, &nStrands, &strandLen) == 0)
   {
-    // printf("token: %s\n", token);
-    if (isalpha(token[0]) == 0) // if strand is not alpha, exit
-    {
-      printf("Error in input file, sequence is not alpha.");
-      return 1;
-    }
+    printf("Unable to read input file sizes, aborting.");
+    abort();
+  }
 
+  // Allocate memory
+  seqs = (char **)malloc(nStrands * sizeof(char *));
+  for (int i = 0; i < nStrands; i++)
+  {
+    seqs[i] = (char *)malloc((strandLen + 1) * sizeof(char));
+  }
+
+  printf("Allocated memory for sequences.");
+
+  // Read in sequences
+  if (ReadInputFileADSCustom(inputFile, seqs, nStrands, strandLen, &vs, NULL, NULL, NULL) == 0)
+  {
+    printf("Unable to read input file sequences, aborting.");
+    abort();
+  }
+
+  // Get mfe for each sequence
+  for (int i = 0; i < nStrands; i++)
+  {
     // get MFE of sequence
-    tmpLength = strlen(token);
-    convertSeq(token, seqNum, tmpLength);
+    tmpLength = strlen(seqs[i]);
+    convertSeq(seqs[i], seqNum, tmpLength);
 
     mfe = mfeFullWithSym(seqNum, tmpLength, &mfeStructs, complexity, DNARNACOUNT,
                          DANGLETYPE, TEMP_K - ZERO_C_IN_KELVIN, vs,
                          1, SODIUM_CONC, MAGNESIUM_CONC,
                          USE_LONG_HELIX_FOR_SALT_CORRECTION);
 
-    // Get next strand
-    token = strtok_custom(NULL, "+", &seqptr);
+    printf("%Lf\n", mfe);
 
-    // printf("mfe of current token: %Lf\n", mfe);
-
-    strandMfes[0] += mfe;
-    strandMfes[strandI++] = mfe;
-
-    // Reset vars
     clearDnaStructures(&mfeStructs);
+
+    mfeSum += mfe;
   }
 
-  // Write sum of all mfes and each oligo's mfe to file
+  // Write to output file
   fp = fopen(outFile, "a");
 
-  for (int i = 0; i < strandI; i++)
-  {
-    fprintf(fp, "%.3Lf\n", strandMfes[i]);
-  }
+  fprintf(fp, "%.3Lf\n", mfeSum);
+  printf("final mfe sum is %Lf\n", mfeSum);
 
   fclose(fp);
 
