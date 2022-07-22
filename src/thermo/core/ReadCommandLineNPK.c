@@ -649,7 +649,7 @@ int ReadInputFileADSCustom(char *inputFile, char *theseq, int *v_pi, float *gap,
                            int *thepairs)
 {
 
-  printf("In ReadInputFileADScustom line 652");
+  // printf("In ReadInputFileADScustom line 652");
 
   FILE *F_inp;
   char *token = NULL;

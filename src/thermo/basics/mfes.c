@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
     strcat(inputFile, ".in"); // Here, .in is just a placeholder
   }
 
-  printf("line 63 mfes.c\n");
+  // printf("line 63 mfes.c\n");
 
   // Read the input file
   if (!inputFileSpecified ||
@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
 
   while (token)
   {
-    printf("token: %s\n", token);
+    // printf("token: %s\n", token);
     if (isalpha(token[0]) == 0) // if strand is not alpha, exit
     {
       printf("Error in input file, sequence is not alpha.");
@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
     // Get next strand
     token = strtok_custom(NULL, "+", &seqptr);
 
-    printf("mfe of current token: %Lf\n", mfe);
+    // printf("mfe of current token: %Lf\n", mfe);
 
     strandMfes[0] += mfe;
     strandMfes[strandI++] = mfe;
