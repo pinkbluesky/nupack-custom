@@ -157,6 +157,7 @@ int main(int argc, char *argv[])
   fp = fopen(outFile, "a");
 
   fprintf(fp, "%.3Lf\n", mfeSum);
+  printf("final mfe sum is %Lf\n", mfeSum);
 
   fclose(fp);
 
