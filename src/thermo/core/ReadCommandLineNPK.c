@@ -645,7 +645,67 @@ int ReadInputFile(char *inputFile, char *theseq, int *v_pi, float *gap, char *st
   return 1;
 }
 
-int ReadInputFileADSCustom(char *inputFile, char *theseq, int *v_pi, float *gap, char *structure,
+int ReadInputFileSizes(char *inputFile, int *nStrands, int *strandLen)
+{
+
+  FILE *F_inp;
+  char *lastline = NULL;
+  char line[MAXLINE];
+  char line2[MAXLINE];
+  char *token = NULL;
+
+  F_inp = fopen(inputFile, "r");
+  if (!F_inp)
+  {
+    printf("Failed to open input file %s\nRequesting input manually.\n", inputFile);
+    return 0;
+  }
+
+  lastline = fgets(line, MAXLINE, F_inp);
+  while (lastline && (line[0] == '%' || line[0] == '>'))
+  {
+    // ignore comments
+    lastline = fgets(line, MAXLINE, F_inp);
+  }
+  if (!lastline)
+  {
+    printf("Error in %s: %s\nRequesting input manually.\n", inputFile, token);
+    fclose(F_inp);
+    return 0;
+  }
+
+  // Read in the # of strands
+  if (sscanf(lastline, "%d", nStrands) != 1)
+  {
+    printf("Error in %s: %s\nNo integer detected for multi\nRequesting input manually.\n", inputFile, token);
+    fclose(F_inp);
+    return 0;
+  }
+
+  // Read in the first sequence
+  lastline = fgets(line, MAXLINE, F_inp);
+  while (lastline && (line[0] == '%' || line[0] == '>'))
+  {
+    lastline = fgets(line, MAXLINE, F_inp);
+  }
+  token = strtok(line, "%>");
+
+  if (!lastline || sscanf(token, "%s", line2) != 1)
+  {
+    printf("Error in %s: %s\nNo string found when reading sequence\nRequesting input manually.\n", inputFile, token);
+    fclose(F_inp);
+    return 0;
+  }
+
+  *strandLen = strlen(line2);
+  
+  fclose(F_inp);
+
+  return 1;
+}
+
+/* Populate the pre-allocated seqs 2D array with the sequences read from the file. */
+int ReadInputFileADSCustom(char *inputFile, char **seqs, int nStrands, int strandLen, int *v_pi, float *gap, char *structure,
                            int *thepairs)
 {
 
@@ -655,11 +715,12 @@ int ReadInputFileADSCustom(char *inputFile, char *theseq, int *v_pi, float *gap,
   char *token = NULL;
   char line[MAXLINE];
   char line2[MAXLINE];
-  int i, j, permSize = 0;
-  char **seqs = NULL;
-  int base1 = 0;
-  int base2 = 0;
-  int nStrands;
+  // int i, j, permSize = 0;
+  int i, j = 0;
+  // char **seqs = NULL;
+  // int base1 = 0;
+  // int base2 = 0;
+  // int nStrands;
   char *lastline = NULL;
 
   // Open input file
@@ -670,9 +731,9 @@ int ReadInputFileADSCustom(char *inputFile, char *theseq, int *v_pi, float *gap,
     return 0;
   }
 
-  // ignore comments
+  // Ignore non-sequence lines (lines that do not have letters)
   lastline = fgets(line, MAXLINE, F_inp);
-  while (lastline && (line[0] == '%' || line[0] == '>'))
+  while (lastline && (line[0] == '%' || line[0] == '>')) // !isalpha(line[0]))
   {
     lastline = fgets(line, MAXLINE, F_inp);
   }
@@ -683,18 +744,8 @@ int ReadInputFileADSCustom(char *inputFile, char *theseq, int *v_pi, float *gap,
     return 0;
   }
 
-  token = strtok(line, "%>");
-
-  // Grab the number of sequences from the input file
-  if (sscanf(token, "%d", &nStrands) != 1)
-  {
-    printf("Error in %s: %s\nNo integer detected for multi\nRequesting input manually.\n", inputFile, token);
-    fclose(F_inp);
-    return 0;
-  }
-
   // allocate function variables
-  seqs = (char **)malloc(nStrands * sizeof(char *));
+  // seqs = (char **)malloc(nStrands * sizeof(char *));
 
   // read in sequences
   for (i = 0; i < nStrands; i++)
@@ -716,20 +767,20 @@ int ReadInputFileADSCustom(char *inputFile, char *theseq, int *v_pi, float *gap,
       return 0;
     }
 
-    seqs[i] = (char *)malloc((strlen(line2) + 1) * sizeof(char));
+    // seqs[i] = (char *)malloc((strlen(line2) + 1) * sizeof(char));
 
     strcpy(seqs[i], line2);
 
-    seqlengthArray[i] = strlen(seqs[i]);
+    // seqlengthArray[i] = strlen(seqs[i]);
   }
-
-  strcpy(theseq, seqs[0]);
-  for (i = 1; i < nStrands; i++)
-  {
-    strcat(theseq, "+");
-    strcat(theseq, seqs[i]);
-  }
-
+  /*
+    strcpy(theseq, seqs[0]);
+    for (i = 1; i < nStrands; i++)
+    {
+      strcat(theseq, "+");
+      strcat(theseq, seqs[i]);
+    }
+  */
   *v_pi = 1;
 
   fclose(F_inp);

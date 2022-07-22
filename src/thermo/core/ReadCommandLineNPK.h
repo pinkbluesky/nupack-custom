@@ -25,6 +25,10 @@ void PrintNupackUtilitiesHelp(void);
 //read in input file
 int ReadInputFile( char*, char*, int*, float*, char*, int*);
 
+int ReadInputFileSizes(char *inputFile, int *nStrands, int *strandLen);
+int ReadInputFileADSCustom(char *inputFile, char **seqs, int nStrands, int strandLen, int *v_pi, float *gap, char *structure,
+                           int *thepairs);
+
 //get input interactively
 void getUserInput(char*, int*,  float*, char*);
 
