@@ -45,9 +45,7 @@ int Multistranded;              //  = 1 if this is a multistranded calculation
 int seqlengthArray[MAXSTRANDS]; // Length of sequences
 int perm[MAXSTRANDS];           // Perm IDs
 int nUniqueSequences;           // Number of unique sequences entered
-#ifdef NUPACK_SAMPLE
-int nupack_random_seed; // Seed to use for sampling
-#endif                  // NUPACK_SAMPLE
+
 
 /* ****************************************************************** */
 int ReadCommandLineNPK(int nargs, char **args, char *inputFile)
@@ -243,30 +241,6 @@ int ReadCommandLineNPK(int nargs, char **args, char *inputFile)
     case 'm':
       USE_MFE = 1;
       break;
-#ifdef NUPACK_SAMPLE
-    case 'n':
-      strcpy(line, optarg);
-      if (isdigit(line[0]))
-      {
-        nupack_num_samples = atoi(line);
-      }
-      else
-      {
-        printf("Invalid Number of Samples Specified");
-      }
-      break;
-    case 'o':
-      strcpy(line, optarg);
-      if (isdigit(line[0]))
-      {
-        nupack_random_seed = atoi(line);
-      }
-      else
-      {
-        printf("Invalid seed provided");
-      }
-      break;
-#endif // NUPACK_SAMPLE
     case 'p':
       strcpy(line, optarg);
       if (isdigit(line[0]))
