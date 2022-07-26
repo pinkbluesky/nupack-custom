@@ -1,6 +1,6 @@
 #include "ene.h"
 
-unsigned int seqHash;
+// unsigned int seqHash;
 int use_cache;
 DBL_TYPE ExplDangleRaw( int i, int j, int seq[], int seqlength);
 

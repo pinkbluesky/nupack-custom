@@ -11,7 +11,7 @@
 
 #include "sumexp.h"
 
-extern unsigned int seqHash;
+// extern unsigned int seqHash;
 /* ******************************************* */
 DBL_TYPE ExplHairpin( int i, int j, int seq[], int seqlength, int **etaN) {
   //this version disallows nicks here

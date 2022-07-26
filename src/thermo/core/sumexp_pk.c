@@ -12,7 +12,7 @@
 
 #include "sumexp_pk.h"
 
-extern unsigned int seqHash;
+// extern unsigned int seqHash;
 /* ************************************** */
 DBL_TYPE SumExpQb_Pk( int i, int j, int seq[], int seqlength, 
                      DBL_TYPE Qp[], DBL_TYPE Qm[] ) {
