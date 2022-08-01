@@ -34,6 +34,47 @@ as the default installation is to subdirectories of /usr/local/
 
 
 ##########################################################################
+Preparation before running NUPACK
+##########################################################################
+
+1) Run the adscodex encoder as described in the README file. You should get an output file
+
+2) Move the adscodex output file to a directory, ie. ~/temp
+
+3) Rename the adscodex output file (if needed) to have a ".in" suffix. This output file serves as the input file for NUPACK
+
+For example: input file is
+    ~/temp/dna.in
+
+4) Build the NUPACK mfes command 
+
+cd nupack3.2.2 && cd build && cmake ../ && make mfes && sudo make install
+
+5) Run the NUPACK mfes command
+
+mfes -material dna -multi prefix 
+    where prefix is the prefix of the input file
+
+For example, given the file setup described above, the command would be:
+    mfes -material dna -multi ~/temp/dna
+
+The command locates the input file as prefix concatenated with the suffix ".in"
+The output of the command is the prefix concatenated with the suffix ".mfes", such as: 
+    ~/temp/test1.mfes
+
+6) Check the output
+
+Open the output .mfes file. The first line after the comments should be a decimal number representing the sum of the oligos' MFE (minimum free energy) value. 
+
+7) Verify the output
+
+Run
+    head ~/temp/dna.in      (or whereever your input file is)
+
+The first line should be the number of oligos in the dataset. Divide the MFE sum from the output file by the number of oligos from the input file. The result should be around -14.
+
+
+##########################################################################
 Custom builds and installations
 ##########################################################################
 If you wish to compile multiple versions of NUPACK, 
