@@ -1,10 +1,18 @@
 ##########################################################################
 README file for NUPACK 3.2.2
-Copyright (c) 2007-2017, California Institute of Technology. 
+Copyright (c) 2007-2017, California Institute of Technology.
 All Rights Reserved. See LICENSE file.
 
 See NUPACK User Guide in /doc folder for full details.
 ##########################################################################
+
+##########################################################################
+Documentation
+##########################################################################
+
+Docs are located in the docs folder.
+- slides source .odp file
+- paper source file in latex 
 
 ##########################################################################
 Required Packages
@@ -16,28 +24,27 @@ cmake (version 2.6.0+)  - A cross-platform open-source build system.
 It can be downloaded from www.cmake.org or installed using a package manager 
 
 ##########################################################################
-Building and installing NUPACK
-##########################################################################
-1) To build NUPACK, type the following commands:
-
-mkdir build
-cd build
-cmake ../
-make
-
-2) To install NUPACK, type the following command: 
-
-make install
-
-Note: You will need superuser privileges to run the install command,
-as the default installation is to subdirectories of /usr/local/ 
-
-
-##########################################################################
-Preparation before running NUPACK
+Set up ADS codex
 ##########################################################################
 
-1) Run the adscodex encoder as described in the README file. You should get an output file
+Set up the ADS codex before running NUPACK. The output file from the codex is used as input for the NUPACK command. 
+
+Follow the how-to setup and encode in the docs folder of the adscodex. 
+
+Then run the following encode command:
+    cd adscodex
+    go run encode/main.go -tbl tbl -printfmt 1 -rndmz -rndseed 10 ~/32kfilerand >> INPUT_PATH
+
+INPUT_PATH: ~/temp/dna.in
+
+Alternatively, use the example dna.in file located in the home dir of this repo, and follow steps 2+ in the following "Running NUPACK" section.
+
+##########################################################################
+Running NUPACK
+##########################################################################
+
+1) Run the adscodex encoder. You should get an output file dna.in
+
 
 2) Move the adscodex output file to a directory, ie. ~/temp
 
@@ -46,14 +53,16 @@ Preparation before running NUPACK
 For example: input file is
     ~/temp/dna.in
 
-4) Build the NUPACK mfes command 
+4) Build and install the NUPACK mfes command 
 
-cd nupack3.2.2 && cd build && cmake ../ && make mfes && sudo make install
+cd nupack3.2.2 && cd build && cmake ../ && make mfes
 
+sudo make install
+ 
 5) Run the NUPACK mfes command
 
-mfes -material dna -multi prefix 
-    where prefix is the prefix of the input file
+mfes -material dna -multi PREFIX 
+    where PREFIX is the prefix of the input file
 
 For example, given the file setup described above, the command would be:
     mfes -material dna -multi ~/temp/dna
@@ -73,35 +82,3 @@ Run
 
 The first line should be the number of oligos in the dataset. Divide the MFE sum from the output file by the number of oligos from the input file. The result should be around -14.
 
-
-##########################################################################
-Custom builds and installations
-##########################################################################
-If you wish to compile multiple versions of NUPACK, 
-simply make additional build directories (e.g., build2, build3, ...)
-using analogous commands as above
-
-Various build configuration options can be passed to cmake. 
-For example, to specify different compilers, substitute the command: 
-
-cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ ../
-
-See www.cmake.org for documentation. 
-
-The install process will put executables in <prefix>/bin, libraries 
-in <prefix>/lib include headers in <prefix>/include, and parameters 
-in <prefix>/share with default location: <prefix>=/usr/local/
- 
-To use a different install location:
- 
-1) substitute the command:
-
-cmake -DCMAKE_INSTALL_PREFIX=<prefix> ../
-
-2) set the NUPACKHOME environment variable: 
-
-export NUPACKHOME=<prefix> 
-
-3) add NUPACKHOME to your path:
-
-export PATH=$PATH:$NUPACKHOME
