@@ -11,7 +11,7 @@ Documentation
 ##########################################################################
 
 Docs are located in the docs folder.
-- slides source .odp file
+- slides source .odp file (not added yet)  
 - paper source file in latex 
 
 ##########################################################################
@@ -29,7 +29,11 @@ Set up ADS codex
 
 Set up the ADS codex before running NUPACK. The output file from the codex is used as input for the NUPACK command. 
 
+GitHub link: https://github.com/pinkbluesky/adscodex/tree/dev
+
 Follow the how-to setup and encode in the docs folder of the adscodex. 
+
+The relevant code is on the dev branch. git checkout dev
 
 Then run the following encode command:
     cd adscodex
