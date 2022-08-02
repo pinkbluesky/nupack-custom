@@ -3,6 +3,7 @@
 \usepackage[sc]{mathpazo}
 \usepackage{graphicx}
 \usepackage{url}
+\usepackage{hyperref}
 \usepackage{subcaption}
 
 
@@ -10,7 +11,7 @@
 \author{Alina Li}
 \date{Aug 5, 2022}
 
-\begin{document}
+\begin{document} 
 \maketitle
 
 \begin{abstract}
@@ -34,9 +35,9 @@ DNA, a two-stranded molecule, has a helical secondary structure, where the two s
 \end{figure} 
 
 
-Generally speaking, a given strand has the ability to form multiple different secondary structures. [2] Some structures are more prominent than others (ie. due to number and strength of bonds), meaning that they are more likely to interfere with sequencing. Quantitatively, we can compare secondary structures by calculating their free energy, a measure based on base pair interactions. Higher, Free energy measures the ability for a system to change, and in this case, it measures the change in energy from the unfolded state with no interactions to the secondary structure state. Larger, more negative values mean that the structure is more prominent. [Citation?]
+Generally speaking, a given strand has the ability to form multiple different secondary structures. [2] Some structures are more prominent than others (ie. due to number and strength of bonds), meaning that they are more likely to interfere with sequencing. Quantitatively, we can compare secondary structures by calculating their free energy, a measure based on base pair interactions. Higher, Free energy measures the ability for a system to change, and in this case, it measures the change in energy from the unfolded state with no interactions to the secondary structure state. Larger, more negative values mean that the structure is more prominent. [Citation?] In Figure 2, two secondary structures with different free energies are shown. The DNA strand is the curve with nucleotides present at regular intervals. Some nucleotides are bonded to others, indicated by the short perpendicular lines. In Figure 2a, many of the bonds connecting complementary sections of the DNA strand are dark red, indicating high equilibrium probability (the probability of remaining in that state). A significant portion of the p     
 
-\begin{figure}
+\begin{figure}[!h]
 \centering
 \begin{subfigure}{.5\textwidth}
   \centering
