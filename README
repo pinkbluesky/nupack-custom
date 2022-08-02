@@ -35,17 +35,13 @@ Set up ADS codex
 
 Set up the ADS codex before running NUPACK. The output file from the codex is used as input for the NUPACK command. 
 
-GitHub link: https://github.com/pinkbluesky/adscodex/tree/dev
-
-Follow the how-to setup and encode in the docs folder of the adscodex. 
-
-The relevant code is on the dev branch. git checkout dev
-
-Then run the following encode command:
+    git clone https://github.com/pinkbluesky/adscodex.git
     cd adscodex
-    go run encode/main.go -tbl tbl -printfmt 1 -rndmz -rndseed 10 ~/32kfilerand >> INPUT_PATH
+    git checkout dev
 
-INPUT_PATH: ~/temp/dna.in
+Follow HOWTO-decode-using-adscodex.txt and HOWTO-encode-using-adscodex.txt in the docs/howtos subfolder of adscodex.
+
+    go run encode/main.go -tbl tbl -printfmt 1 -rndmz -rndseed 10 ~/32kfilerand >> ~/temp/dna.in
 
 Alternatively, use the example dna.in file located in the home dir of this repo, and follow steps 2+ in the following "Running NUPACK" section.
 
@@ -53,42 +49,34 @@ Alternatively, use the example dna.in file located in the home dir of this repo,
 Running NUPACK
 ##########################################################################
 
+Prereq:
+
 1) Run the adscodex encoder. You should get an output file dna.in
 
+2) The file dna.in should be located in a a directory, ie. ~/temp
 
-2) Move the adscodex output file to a directory, ie. ~/temp
+Running NUPACK:
 
-3) Rename the adscodex output file (if needed) to have a ".in" suffix. This output file serves as the input file for NUPACK
+1) Build and install the NUPACK mfes command 
 
-For example: input file is
-    ~/temp/dna.in
+2) Run the NUPACK mfes command
 
-4) Build and install the NUPACK mfes command 
+3) Verify output
 
-cd nupack3.2.2 && cd build && cmake ../ && make mfes
+Run:
+    git clone https://github.com/pinkbluesky/nupack-custom.git
 
-sudo make install
- 
-5) Run the NUPACK mfes command
+    cd nupack-custom
+    mkdir build && cd build
+    cmake ../ && make mfes
+    make install
 
-mfes -material dna -multi PREFIX 
-    where PREFIX is the prefix of the input file
-
-For example, given the file setup described above, the command would be:
     mfes -material dna -multi ~/temp/dna
 
-The command locates the input file as prefix concatenated with the suffix ".in"
-The output of the command is the prefix concatenated with the suffix ".mfes", such as: 
-    ~/temp/test1.mfes
+    tail ~/temp/dna.mfes
+    head ~/temp/dna.in
 
-6) Check the output
 
-Open the output .mfes file. The first line after the comments should be a decimal number representing the sum of the oligos' MFE (minimum free energy) value. 
-
-7) Verify the output
-
-Run
-    head ~/temp/dna.in      (or whereever your input file is)
-
-The first line should be the number of oligos in the dataset. Divide the MFE sum from the output file by the number of oligos from the input file. The result should be around -14.
+The last line of dna.mfes is the sum of free energies. Divide this sum by the first number in dna.in.
+The value should be around -14.
 
