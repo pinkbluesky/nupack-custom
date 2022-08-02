@@ -12,7 +12,13 @@ Documentation
 
 Docs are located in the docs folder.
 - slides source .odp file (not added yet)  
-- paper source file in latex 
+- paper source file in latex
+
+Generate paper:
+    apt install inkscape
+    cd docs
+    pdflatex --shell-escape LiAlina_2022_SecondaryStructures_paper.tex 
+
 
 ##########################################################################
 Required Packages

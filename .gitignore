@@ -20,3 +20,11 @@ bin/
 
 # Built Visual Studio Code Extensions
 *.vsix
+
+# latex files
+*.dvi
+*.log
+*.aux
+*.out
+*paper.pdf
+svg-inkscape
